@@ -26,6 +26,8 @@ namespace Grammophone.Formulae.Evaluation
 		private readonly IReadOnlyDictionary<string, IFormulaDefinition> formulaDefinitionsByidentifiers;
 
 		private readonly ScriptOptions scriptOptions;
+		
+		private readonly IEnumerable<string> excludedNamespaces;
 
 		#endregion
 
@@ -36,7 +38,11 @@ namespace Grammophone.Formulae.Evaluation
 		/// </summary>
 		/// <param name="formulaDefinitions">The definitions of the formulae to evaluate.</param>
 		/// <param name="assemblies">Optional additional assemblies to reference for the compilation of the formulae.</param>
-		internal FormulaEvaluator(IEnumerable<IFormulaDefinition> formulaDefinitions, IEnumerable<Assembly>? assemblies = null)
+		/// <param name="excludedNamespaces">Optional namespaces to be blocked from usage.</param>
+		internal FormulaEvaluator(
+			IEnumerable<IFormulaDefinition> formulaDefinitions,
+			IEnumerable<Assembly>? assemblies = null,
+			IEnumerable<string>? excludedNamespaces = null)
 		{
 			formulaDefinitionsByidentifiers = formulaDefinitions.ToDictionary(d => d.Identifier);
 
@@ -49,6 +55,8 @@ namespace Grammophone.Formulae.Evaluation
 				.WithCheckOverflow(true);
 
 			if (assemblies != null) scriptOptions = scriptOptions.AddReferences(assemblies);
+
+			this.excludedNamespaces = excludedNamespaces ?? Enumerable.Empty<string>();
 		}
 
 		#endregion
@@ -68,6 +76,8 @@ namespace Grammophone.Formulae.Evaluation
 			if (identifier == null) throw new ArgumentNullException(nameof(identifier));
 
 			var script = GetScript(identifier).ContinueWith(identifier, scriptOptions);
+
+			EnsureNamespaceUsage(script);
 
 			OnPreRunScript(script);
 
@@ -151,6 +161,11 @@ namespace Grammophone.Formulae.Evaluation
 			targetScript = targetScript.ContinueWith(sourceScript.Code, scriptOptions);
 
 			return targetScript;
+		}
+
+		private void EnsureNamespaceUsage(Script script)
+		{
+
 		}
 
 		#endregion
