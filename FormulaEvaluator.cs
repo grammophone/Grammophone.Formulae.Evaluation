@@ -69,6 +69,8 @@ namespace Grammophone.Formulae.Evaluation
 
 			var script = GetScript(identifier).ContinueWith(identifier, scriptOptions);
 
+			OnPreRunScript(script);
+
 			var scriptState = await script.RunAsync(globals: context);
 
 			return new EvaluationState(scriptState);
@@ -86,6 +88,18 @@ namespace Grammophone.Formulae.Evaluation
 			var evaluationState = await RunAsync(context, identifier);
 
 			return (T?)evaluationState.ReturnValue;
+		}
+
+		#endregion
+
+		#region Protected methods
+
+		/// <summary>
+		/// Called when the full script is run.
+		/// </summary>
+		/// <remarks>The default implementation does nothing.</remarks>
+		protected virtual void OnPreRunScript(Script script)
+		{
 		}
 
 		#endregion
