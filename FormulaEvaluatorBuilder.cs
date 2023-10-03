@@ -45,7 +45,7 @@ namespace Grammophone.Formulae.Evaluation
 		/// </summary>
 		/// <typeparam name="C">The type of the context class.</typeparam>
 		/// <param name="formulaDefinitions">The formula definitions to be used for evaluation.</param>
-		public FormulaEvaluator<C> CreateEvaluator<C>(IEnumerable<IFormulaDefinition> formulaDefinitions) where C : class
+		public virtual FormulaEvaluator<C> CreateEvaluator<C>(IEnumerable<IFormulaDefinition> formulaDefinitions) where C : class
 			=> new FormulaEvaluator<C>(formulaDefinitions, this.Assemblies.ToImmutableArray());
 
 		#endregion
