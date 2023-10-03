@@ -56,7 +56,7 @@ namespace Grammophone.Formulae.Evaluation
 
 			if (assemblies != null) scriptOptions = scriptOptions.AddReferences(assemblies);
 
-			this.excludedNamespaces = excludedNamespaces ?? Enumerable.Empty<string>();
+			this.excludedNamespaces = new HashSet<string>(excludedNamespaces) ?? Enumerable.Empty<string>();
 		}
 
 		#endregion
