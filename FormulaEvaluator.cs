@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Scripting;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Scripting;
+using System.Collections.Immutable;
 
 namespace Grammophone.Formulae.Evaluation
 {
@@ -77,6 +78,15 @@ namespace Grammophone.Formulae.Evaluation
 
 			var script = GetScript(identifier).ContinueWith(identifier, scriptOptions);
 
+			var diagnostics = ConvertDiagnostics(script.Compile());
+
+			var errorDiagnostics = from diagnostic in diagnostics
+														 where diagnostic.Severity == FormulaDiagnosticSeverity.Error
+														 select diagnostic;
+
+			if (errorDiagnostics.Any())
+				throw new FormulaCompilationException("Formula compilation has failed.", diagnostics);
+
 			EnsureNamespaceUsage(script);
 
 			OnPreRunScript(script);
@@ -113,6 +123,11 @@ namespace Grammophone.Formulae.Evaluation
 		}
 
 		#endregion
+
+		private ImmutableArray<FormulaDiagnostic> ConvertDiagnostics(ImmutableArray<Diagnostic> diagnostics)
+		{
+			return diagnostics.Select(d => new FormulaDiagnostic(FormulaDiagnosticSeverity.Error, "")).ToImmutableArray();
+		}
 
 		#region Private methods
 
@@ -165,7 +180,22 @@ namespace Grammophone.Formulae.Evaluation
 
 		private void EnsureNamespaceUsage(Script script)
 		{
+			var syntaxTree = script.GetCompilation().SyntaxTrees.FirstOrDefault();
 
+			if (syntaxTree == null) return;
+
+			var memberAccessExpressions = from node in syntaxTree.GetRoot().DescendantNodesAndSelf().OfType<MemberAccessExpressionSyntax>()
+																		select node.Expression;
+
+			foreach (var memberAccessExpression in memberAccessExpressions)
+			{
+				string text = memberAccessExpression.Span.ToString();
+
+				if (excludedNamespaces.Contains(text))
+				{
+					throw new FormulaEvaluationException($"The namespace '{text}' is not allowed for usage.");
+				}
+			}
 		}
 
 		#endregion
