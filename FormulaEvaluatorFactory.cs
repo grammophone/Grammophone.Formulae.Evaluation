@@ -9,13 +9,30 @@ using System.Threading.Tasks;
 namespace Grammophone.Formulae.Evaluation
 {
 	/// <summary>
-	/// Builder for creating <see cref="FormulaEvaluator{C}"/> instances.
+	/// Factory for creating <see cref="FormulaEvaluator{C}"/> instances.
 	/// </summary>
 	/// <typeparam name="C">The type of the context class.</typeparam>
 	public class FormulaEvaluatorFactory<C>
 		where C : class
 	{
+		#region Private fields
+
+		private static readonly IReadOnlyCollection<Assembly> defaultAssemblies;
+
+		private static readonly IReadOnlyCollection<string> defaultImports;
+
+		private static readonly IReadOnlyCollection<string> defaultExcludedNames;
+
+		#endregion
+
 		#region Construction
+
+		static FormulaEvaluatorFactory()
+		{
+			defaultAssemblies = new Assembly[] { };
+			defaultImports = new string[] { "System", "System.Math" };
+			defaultExcludedNames = new string[] { };
+		}
 
 		/// <summary>
 		/// Create.
@@ -28,17 +45,17 @@ namespace Grammophone.Formulae.Evaluation
 			if (assemblies != null)
 				this.Assemblies = assemblies.ToImmutableArray();
 			else
-				this.Assemblies = new ImmutableArray<Assembly> { };
+				this.Assemblies = defaultAssemblies;
 
 			if (imports != null)
 				this.Imports = imports.ToImmutableArray();
 			else
-				this.Imports = new ImmutableArray<string> { "System", "System.Math" };
+				this.Imports = defaultImports;
 
 			if (excludedNames != null)
 				this.ExcludedNames = excludedNames.ToImmutableArray();
 			else
-				this.ExcludedNames = new ImmutableArray<string> { };
+				this.ExcludedNames =defaultExcludedNames;
 		}
 
 		#endregion
@@ -69,7 +86,7 @@ namespace Grammophone.Formulae.Evaluation
 		/// </summary>
 		/// <param name="formulaDefinitions">The formula definitions to be used for evaluation.</param>
 		public virtual FormulaEvaluator<C> CreateEvaluator(IEnumerable<IFormulaDefinition> formulaDefinitions)
-			=> new FormulaEvaluator<C>(formulaDefinitions, this.Assemblies, this.Imports, this.ExcludedNames);
+			=> new(formulaDefinitions, this.Assemblies, this.Imports, this.ExcludedNames);
 
 		#endregion
 

@@ -136,9 +136,7 @@ namespace Grammophone.Formulae.Evaluation
 			};
 
 		private ImmutableArray<FormulaDiagnostic> ConvertDiagnostics(ImmutableArray<Diagnostic> diagnostics)
-		{
-			return diagnostics.Select(d => new FormulaDiagnostic(ConvertFormulaDiagnosticSeverity(d.Severity), d.ToString())).ToImmutableArray();
-		}
+			=> diagnostics.Select(d => new FormulaDiagnostic(ConvertFormulaDiagnosticSeverity(d.Severity), d.ToString())).ToImmutableArray();
 
 		private Script GetScript(string identifier)
 		{
