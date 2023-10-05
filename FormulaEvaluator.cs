@@ -86,7 +86,7 @@ namespace Grammophone.Formulae.Evaluation
 														 select diagnostic;
 
 			if (errorDiagnostics.Any())
-				throw new FormulaCompilationErrorException("Formula compilation has failed.", diagnostics);
+				throw new FormulaCompilationErrorException(FormulaEvaluatorResources.COMPILATION_FAILED, diagnostics);
 
 			EnsureNamespaceUsage(script);
 
@@ -132,7 +132,7 @@ namespace Grammophone.Formulae.Evaluation
 				DiagnosticSeverity.Info => FormulaDiagnosticSeverity.Info,
 				DiagnosticSeverity.Warning => FormulaDiagnosticSeverity.Warning,
 				DiagnosticSeverity.Error => FormulaDiagnosticSeverity.Error,
-				_ => throw new FormulaEvaluationException($"Unknown compilation diagnostic severity type '{severity}'.")
+				_ => throw new FormulaEvaluationException(String.Format(FormulaEvaluatorResources.UNKNOWN_SEVERITY_TYPE, severity))
 			};
 
 		private ImmutableArray<FormulaDiagnostic> ConvertDiagnostics(ImmutableArray<Diagnostic> diagnostics)
@@ -204,7 +204,7 @@ namespace Grammophone.Formulae.Evaluation
 
 				if (excludedNamespaces.Contains(text))
 				{
-					throw new FormulaEvaluationException($"The namespace '{text}' is not allowed for usage.");
+					throw new FormulaEvaluationException(String.Format(FormulaEvaluatorResources.NAMESPACE_ACCESS_DENIED, text));
 				}
 			}
 		}

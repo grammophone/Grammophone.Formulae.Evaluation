@@ -61,11 +61,38 @@ namespace Grammophone.Formulae.Evaluation {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Formula compilation has failed..
+        /// </summary>
+        internal static string COMPILATION_FAILED {
+            get {
+                return ResourceManager.GetString("COMPILATION_FAILED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Access to namespace &apos;{0}&apos; is denied..
+        /// </summary>
+        internal static string NAMESPACE_ACCESS_DENIED {
+            get {
+                return ResourceManager.GetString("NAMESPACE_ACCESS_DENIED", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No formula is defined for identifier &apos;{0}&apos;..
         /// </summary>
         internal static string NO_FORMULA_FOR_IDENTIFIER {
             get {
                 return ResourceManager.GetString("NO_FORMULA_FOR_IDENTIFIER", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown compilation diagnostic severity type &apos;{0}&apos;..
+        /// </summary>
+        internal static string UNKNOWN_SEVERITY_TYPE {
+            get {
+                return ResourceManager.GetString("UNKNOWN_SEVERITY_TYPE", resourceCulture);
             }
         }
     }

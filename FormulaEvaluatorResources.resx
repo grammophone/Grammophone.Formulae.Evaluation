@@ -117,7 +117,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="COMPILATION_FAILED" xml:space="preserve">
+    <value>Formula compilation has failed.</value>
+  </data>
+  <data name="NAMESPACE_ACCESS_DENIED" xml:space="preserve">
+    <value>Access to namespace '{0}' is denied.</value>
+  </data>
   <data name="NO_FORMULA_FOR_IDENTIFIER" xml:space="preserve">
     <value>No formula is defined for identifier '{0}'.</value>
+  </data>
+  <data name="UNKNOWN_SEVERITY_TYPE" xml:space="preserve">
+    <value>Unknown compilation diagnostic severity type '{0}'.</value>
   </data>
 </root>
