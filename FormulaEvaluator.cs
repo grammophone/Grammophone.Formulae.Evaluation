@@ -40,7 +40,7 @@ namespace Grammophone.Formulae.Evaluation
 		/// <param name="formulaDefinitions">The definitions of the formulae to evaluate.</param>
 		/// <param name="assemblies">Optional additional assemblies to reference for the compilation of the formulae.</param>
 		/// <param name="excludedNames">Optional namespaces or member names to be blocked from usage.</param>
-		internal FormulaEvaluator(
+		protected internal FormulaEvaluator(
 			IEnumerable<IFormulaDefinition> formulaDefinitions,
 			IEnumerable<Assembly>? assemblies = null,
 			IEnumerable<string>? excludedNames = null)
