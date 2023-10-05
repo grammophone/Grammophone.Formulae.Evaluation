@@ -195,16 +195,17 @@ namespace Grammophone.Formulae.Evaluation
 
 			if (syntaxTree == null) return;
 
-			var memberAccessExpressions = from node in syntaxTree.GetRoot().DescendantNodesAndSelf().OfType<MemberAccessExpressionSyntax>()
-																		select node.Expression;
+			var nameNodes = from node in syntaxTree.GetRoot().DescendantNodesAndSelf()
+															where node.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.SimpleMemberAccessExpression) || node.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.IdentifierName)
+															select node;
 
-			foreach (var memberAccessExpression in memberAccessExpressions)
+			foreach (var nameNode in nameNodes)
 			{
-				string memberName = memberAccessExpression.ToString();
+				string name = nameNode.ToString();
 
-				if (excludedNames.Contains(memberName))
+				if (excludedNames.Contains(name))
 				{
-					throw new FormulaNameAccessException(String.Format(FormulaEvaluatorResources.NAME_ACCESS_DENIED, memberName), memberName);
+					throw new FormulaNameAccessException(String.Format(FormulaEvaluatorResources.NAME_ACCESS_DENIED, name), name);
 				}
 			}
 		}
