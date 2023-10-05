@@ -204,7 +204,7 @@ namespace Grammophone.Formulae.Evaluation
 
 				if (excludedNames.Contains(memberName))
 				{
-					throw new FormulaEvaluationException(String.Format(FormulaEvaluatorResources.NAME_ACCESS_DENIED, memberName));
+					throw new FormulaNameAccessException(String.Format(FormulaEvaluatorResources.NAME_ACCESS_DENIED, memberName), memberName);
 				}
 			}
 		}
