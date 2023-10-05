@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -12,6 +13,7 @@ namespace Grammophone.Formulae.Evaluation
 	/// <summary>
 	/// The result of an evaluation.
 	/// </summary>
+	[DebuggerDisplay("{GetDebuggerDisplay(), nq}")]
 	public class EvaluationState
 	{
 		#region Construction
@@ -53,6 +55,15 @@ namespace Grammophone.Formulae.Evaluation
 		/// The diagnostics of the formula compilation.
 		/// </summary>
 		public IReadOnlyList<FormulaDiagnostic> Diagnostics { get; }
+
+		#endregion
+
+		#region Private methods
+
+		/// <summary>
+		/// Used for debugger display.
+		/// </summary>
+		private string GetDebuggerDisplay() => $"{this.Identifier}: {this.ReturnValue ?? "<null>"}";
 
 		#endregion
 	}
