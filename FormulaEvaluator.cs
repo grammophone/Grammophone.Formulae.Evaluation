@@ -39,10 +39,12 @@ namespace Grammophone.Formulae.Evaluation
 		/// </summary>
 		/// <param name="formulaDefinitions">The definitions of the formulae to evaluate.</param>
 		/// <param name="assemblies">Optional additional assemblies to reference for the compilation of the formulae.</param>
+		/// <param name="imports">Optional namespace imports.</param>
 		/// <param name="excludedNames">Optional namespaces or member names to be blocked from usage.</param>
 		protected internal FormulaEvaluator(
 			IEnumerable<IFormulaDefinition> formulaDefinitions,
 			IEnumerable<Assembly>? assemblies = null,
+			IEnumerable<string>? imports = null,
 			IEnumerable<string>? excludedNames = null)
 		{
 			formulaDefinitionsByidentifiers = formulaDefinitions.ToDictionary(d => d.Identifier);
@@ -50,12 +52,12 @@ namespace Grammophone.Formulae.Evaluation
 			formulaScriptsByIdentifiers = new ConcurrentDictionary<string, Script>();
 
 			scriptOptions = ScriptOptions.Default
-				.AddImports("System", "System.Math")
 				.WithReferences(typeof(Object).Assembly, typeof(Math).Assembly, typeof(IEnumerable<C>).Assembly)
 				.WithAllowUnsafe(false)
 				.WithCheckOverflow(true);
 
 			if (assemblies != null) scriptOptions = scriptOptions.AddReferences(assemblies);
+			if (imports != null) scriptOptions = scriptOptions.AddImports(imports);
 
 			this.excludedNames = new HashSet<string>(excludedNames) ?? Enumerable.Empty<string>();
 		}
