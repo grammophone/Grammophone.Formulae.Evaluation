@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Grammophone.Caching;
 
 namespace Grammophone.Formulae.Evaluation
 {
@@ -15,6 +16,48 @@ namespace Grammophone.Formulae.Evaluation
 	public class FormulaEvaluatorFactory<C>
 		where C : class
 	{
+		#region Auxilliary classes
+
+		private class FormulaDefinitionsKey : IEquatable<FormulaDefinitionsKey>
+		{
+			public FormulaDefinitionsKey(IEnumerable<IFormulaDefinition> formulaDefinitions)
+			{
+				this.FormulaDefinitions = formulaDefinitions;
+
+				this.CompositeKey = GetFormulaDefinitionsCompositeKey(formulaDefinitions);
+			}
+
+			public IEnumerable<IFormulaDefinition> FormulaDefinitions { get; }
+
+			internal string CompositeKey { get; }
+
+			private static string GetFormulaDefinitionsCompositeKey(IEnumerable<IFormulaDefinition> formulaDefinitions)
+			{
+				var compositeKeyBuilder = new StringBuilder();
+
+				var keys = from formulaDefinition in formulaDefinitions
+									 let key = formulaDefinition.GetFormulaID()
+									 orderby key ascending
+									 select key;
+
+				foreach (var key in keys)
+				{
+					compositeKeyBuilder.Append(key);
+					compositeKeyBuilder.Append('|');
+				}
+
+				return compositeKeyBuilder.ToString();
+			}
+
+			public bool Equals(FormulaEvaluatorFactory<C>.FormulaDefinitionsKey? other) => this.CompositeKey == other?.CompositeKey;
+
+			public override int GetHashCode() => this.CompositeKey.GetHashCode();
+
+			public override bool Equals(object obj) => this.Equals(obj as FormulaDefinitionsKey);
+		}
+
+		#endregion
+
 		#region Private fields
 
 		private static readonly IReadOnlyCollection<Assembly> defaultAssemblies;
@@ -22,6 +65,8 @@ namespace Grammophone.Formulae.Evaluation
 		private static readonly IReadOnlyCollection<string> defaultImports;
 
 		private static readonly IReadOnlyCollection<string> defaultExcludedNames;
+
+		private readonly MRUCache<FormulaDefinitionsKey, FormulaEvaluator<C>> evaluatorsCache;
 
 		#endregion
 
@@ -55,7 +100,9 @@ namespace Grammophone.Formulae.Evaluation
 			if (excludedNames != null)
 				this.ExcludedNames = excludedNames.ToImmutableArray();
 			else
-				this.ExcludedNames =defaultExcludedNames;
+				this.ExcludedNames = defaultExcludedNames;
+
+			this.evaluatorsCache = new MRUCache<FormulaDefinitionsKey, FormulaEvaluator<C>>(k => CreateEvaluator(k.FormulaDefinitions));
 		}
 
 		#endregion
@@ -82,33 +129,28 @@ namespace Grammophone.Formulae.Evaluation
 		#region Public methods
 
 		/// <summary>
-		/// Create a <see cref="FormulaEvaluator{C}"/> based on the settings of this builder.
+		/// Get or create a <see cref="FormulaEvaluator{C}"/> from the cache based on the settings of this builder and the given formulae.
 		/// </summary>
 		/// <param name="formulaDefinitions">The formula definitions to be used for evaluation.</param>
-		public virtual FormulaEvaluator<C> CreateEvaluator(IEnumerable<IFormulaDefinition> formulaDefinitions)
-			=> new(formulaDefinitions, this.Assemblies, this.Imports, this.ExcludedNames);
+		public FormulaEvaluator<C> GetEvaluator(IEnumerable<IFormulaDefinition> formulaDefinitions)
+		{
+			if (formulaDefinitions == null) throw new ArgumentNullException(nameof(formulaDefinitions));
+
+			var formulaDefinitionsKey = new FormulaDefinitionsKey(formulaDefinitions);
+
+			return evaluatorsCache.Get(formulaDefinitionsKey);
+		}
 
 		#endregion
 
-		#region Private methods
+		#region Protected methods
 
-		private string GetFormulaDefinitionsCompositeKey(IEnumerable<IFormulaDefinition> formulaDefinitions)
-		{
-			var compositeKeyBuilder = new StringBuilder();
-
-			var keys = from formulaDefinition in formulaDefinitions
-								 let key = formulaDefinition.GetFormulaID()
-								 orderby key ascending
-								 select key;
-
-			foreach (var key in keys)
-			{
-				compositeKeyBuilder.Append(key);
-				compositeKeyBuilder.Append('|');
-			}
-
-			return compositeKeyBuilder.ToString();
-		}
+		/// <summary>
+		/// Create a <see cref="FormulaEvaluator{C}"/> based on the settings of this builder and the given formulae.
+		/// </summary>
+		/// <param name="formulaDefinitions">The formula definitions to be used for evaluation.</param>
+		protected virtual FormulaEvaluator<C> CreateEvaluator(IEnumerable<IFormulaDefinition> formulaDefinitions)
+			=> new(formulaDefinitions, this.Assemblies, this.Imports, this.ExcludedNames);
 
 		#endregion
 	}

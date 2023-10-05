@@ -13,6 +13,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\Grammophone.Caching\Grammophone.Caching.csproj" />
 	  <ProjectReference Include="..\Grammophone.Formulae\Grammophone.Formulae.csproj" />
 	</ItemGroup>
 
