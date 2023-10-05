@@ -19,18 +19,18 @@ namespace Grammophone.Formulae.Evaluation
 		/// Create.
 		/// </summary>
 		/// <param name="assemblies">Optional collectoin of additional assembles to be referenced by the evaluators to be created.</param>
-		/// <param name="excludedNamespaces">Optional namespaces to be blocked from usage.</param>
-		public FormulaEvaluatorBuilder(IEnumerable<Assembly>? assemblies = null, IEnumerable<string>? excludedNamespaces = null)
+		/// <param name="excludedNames">Optional Namespaces or member names to be blocked from usage.</param>
+		public FormulaEvaluatorBuilder(IEnumerable<Assembly>? assemblies = null, IEnumerable<string>? excludedNames = null)
 		{
 			if (assemblies != null)
 				this.Assemblies = assemblies.ToList();
 			else
 				this.Assemblies = new List<Assembly>();
 
-			if (excludedNamespaces != null)
-				this.ExcludedNamespaces = excludedNamespaces.ToList();
+			if (excludedNames != null)
+				this.ExcludedNames = excludedNames.ToList();
 			else
-				this.ExcludedNamespaces = new List<string>();
+				this.ExcludedNames = new List<string>();
 		}
 
 		#endregion
@@ -43,9 +43,9 @@ namespace Grammophone.Formulae.Evaluation
 		public ICollection<Assembly> Assemblies { get; }
 
 		/// <summary>
-		/// Namespaces to be blocked from usage.
+		/// Namespaces or member names to be blocked from usage.
 		/// </summary>
-		public ICollection<string> ExcludedNamespaces { get; }
+		public ICollection<string> ExcludedNames { get; }
 
 		#endregion
 
@@ -57,7 +57,7 @@ namespace Grammophone.Formulae.Evaluation
 		/// <typeparam name="C">The type of the context class.</typeparam>
 		/// <param name="formulaDefinitions">The formula definitions to be used for evaluation.</param>
 		public virtual FormulaEvaluator<C> CreateEvaluator<C>(IEnumerable<IFormulaDefinition> formulaDefinitions) where C : class
-			=> new FormulaEvaluator<C>(formulaDefinitions, this.Assemblies.ToImmutableArray(), this.ExcludedNamespaces.ToImmutableArray());
+			=> new FormulaEvaluator<C>(formulaDefinitions, this.Assemblies.ToImmutableArray(), this.ExcludedNames.ToImmutableArray());
 
 		#endregion
 	}

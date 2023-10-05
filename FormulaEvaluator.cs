@@ -28,7 +28,7 @@ namespace Grammophone.Formulae.Evaluation
 
 		private readonly ScriptOptions scriptOptions;
 		
-		private readonly IEnumerable<string> excludedNamespaces;
+		private readonly IEnumerable<string> excludedNames;
 
 		#endregion
 
@@ -39,11 +39,11 @@ namespace Grammophone.Formulae.Evaluation
 		/// </summary>
 		/// <param name="formulaDefinitions">The definitions of the formulae to evaluate.</param>
 		/// <param name="assemblies">Optional additional assemblies to reference for the compilation of the formulae.</param>
-		/// <param name="excludedNamespaces">Optional namespaces to be blocked from usage.</param>
+		/// <param name="excludedNames">Optional namespaces or member names to be blocked from usage.</param>
 		internal FormulaEvaluator(
 			IEnumerable<IFormulaDefinition> formulaDefinitions,
 			IEnumerable<Assembly>? assemblies = null,
-			IEnumerable<string>? excludedNamespaces = null)
+			IEnumerable<string>? excludedNames = null)
 		{
 			formulaDefinitionsByidentifiers = formulaDefinitions.ToDictionary(d => d.Identifier);
 
@@ -57,7 +57,7 @@ namespace Grammophone.Formulae.Evaluation
 
 			if (assemblies != null) scriptOptions = scriptOptions.AddReferences(assemblies);
 
-			this.excludedNamespaces = new HashSet<string>(excludedNamespaces) ?? Enumerable.Empty<string>();
+			this.excludedNames = new HashSet<string>(excludedNames) ?? Enumerable.Empty<string>();
 		}
 
 		#endregion
@@ -87,8 +87,6 @@ namespace Grammophone.Formulae.Evaluation
 
 			if (errorDiagnostics.Any())
 				throw new FormulaCompilationErrorException(FormulaEvaluatorResources.COMPILATION_FAILED, diagnostics);
-
-			EnsureNamespaceUsage(script);
 
 			OnPreRunScript(script);
 
@@ -177,6 +175,8 @@ namespace Grammophone.Formulae.Evaluation
 
 			fullScript = fullScript.ContinueWith($"{formulaDefinition.DataType} {formulaDefinition.Identifier} = {formulaDefinition.Expression};", scriptOptions);
 
+			EnsureNamespaceUsage(fullScript);
+
 			return fullScript;
 		}
 
@@ -200,11 +200,11 @@ namespace Grammophone.Formulae.Evaluation
 
 			foreach (var memberAccessExpression in memberAccessExpressions)
 			{
-				string text = memberAccessExpression.Span.ToString();
+				string memberName = memberAccessExpression.ToString();
 
-				if (excludedNamespaces.Contains(text))
+				if (excludedNames.Contains(memberName))
 				{
-					throw new FormulaEvaluationException(String.Format(FormulaEvaluatorResources.NAMESPACE_ACCESS_DENIED, text));
+					throw new FormulaEvaluationException(String.Format(FormulaEvaluatorResources.NAME_ACCESS_DENIED, memberName));
 				}
 			}
 		}

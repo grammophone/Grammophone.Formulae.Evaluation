@@ -70,11 +70,11 @@ namespace Grammophone.Formulae.Evaluation {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Access to namespace &apos;{0}&apos; is denied..
+        ///   Looks up a localized string similar to Access to name &apos;{0}&apos; is denied..
         /// </summary>
-        internal static string NAMESPACE_ACCESS_DENIED {
+        internal static string NAME_ACCESS_DENIED {
             get {
-                return ResourceManager.GetString("NAMESPACE_ACCESS_DENIED", resourceCulture);
+                return ResourceManager.GetString("NAME_ACCESS_DENIED", resourceCulture);
             }
         }
         
