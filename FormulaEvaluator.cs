@@ -121,6 +121,8 @@ namespace Grammophone.Formulae.Evaluation
 
 		#endregion
 
+		#region Private methods
+
 		private FormulaDiagnosticSeverity ConvertFormulaDiagnosticSeverity(DiagnosticSeverity severity)
 			=> severity switch
 			{
@@ -135,8 +137,6 @@ namespace Grammophone.Formulae.Evaluation
 		{
 			return diagnostics.Select(d => new FormulaDiagnostic(ConvertFormulaDiagnosticSeverity(d.Severity), d.ToString())).ToImmutableArray();
 		}
-
-		#region Private methods
 
 		private Script GetScript(string identifier)
 		{
