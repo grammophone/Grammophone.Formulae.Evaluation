@@ -7,16 +7,17 @@ namespace Grammophone.Formulae.Evaluation
 {
   /// <summary>
   /// Exception thrown when the formulae cannot be compiled by a <see cref="FormulaEvaluator{C}"/>.
+  /// The compilation diagnstics, including the errors, are described in the <see cref="Diagnostics"/> property.
   /// </summary>
   [Serializable]
-  public class FormulaCompilationException : FormulaEvaluationException
+  public class FormulaCompilationErrorException : FormulaEvaluationException
   {
 		/// <summary>
 		/// Create.
 		/// </summary>
 		/// <param name="message">The message.</param>
 		/// <param name="diagnostics">The diagnostics of the compilation.</param>
-		public FormulaCompilationException(string message, IEnumerable<FormulaDiagnostic> diagnostics) : base(message)
+		public FormulaCompilationErrorException(string message, IEnumerable<FormulaDiagnostic> diagnostics) : base(message)
     {
       this.Diagnostics = diagnostics;
     }
@@ -27,13 +28,13 @@ namespace Grammophone.Formulae.Evaluation
     /// <param name="message">The message.</param>
     /// <param name="diagnostics">The diagnostics of the compilation.</param>
     /// <param name="inner">The inner exception.</param>
-    public FormulaCompilationException(string message, IEnumerable<FormulaDiagnostic> diagnostics, Exception inner) : base(message, inner)
+    public FormulaCompilationErrorException(string message, IEnumerable<FormulaDiagnostic> diagnostics, Exception inner) : base(message, inner)
     {
       this.Diagnostics = diagnostics;
     }
     
     /// <inheritdoc/>
-    protected FormulaCompilationException(
+    protected FormulaCompilationErrorException(
       System.Runtime.Serialization.SerializationInfo info,
       System.Runtime.Serialization.StreamingContext context) : base(info, context) 
     {

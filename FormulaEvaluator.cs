@@ -71,6 +71,7 @@ namespace Grammophone.Formulae.Evaluation
 		/// <param name="identifier">The identifier to evaluate.</param>
 		/// <returns>Returns the evaluation state.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when arguments are null.</exception>
+		/// <exception cref="FormulaCompilationErrorException">Thrown when there is a compilation error.</exception>
 		public async Task<EvaluationState> RunAsync(C context, string identifier)
 		{
 			if (context == null) throw new ArgumentNullException(nameof(context));
@@ -85,7 +86,7 @@ namespace Grammophone.Formulae.Evaluation
 														 select diagnostic;
 
 			if (errorDiagnostics.Any())
-				throw new FormulaCompilationException("Formula compilation has failed.", diagnostics);
+				throw new FormulaCompilationErrorException("Formula compilation has failed.", diagnostics);
 
 			EnsureNamespaceUsage(script);
 
@@ -124,9 +125,19 @@ namespace Grammophone.Formulae.Evaluation
 
 		#endregion
 
+		private FormulaDiagnosticSeverity ConvertFormulaDiagnosticSeverity(DiagnosticSeverity severity)
+			=> severity switch
+			{
+				DiagnosticSeverity.Hidden => FormulaDiagnosticSeverity.Hidden,
+				DiagnosticSeverity.Info => FormulaDiagnosticSeverity.Info,
+				DiagnosticSeverity.Warning => FormulaDiagnosticSeverity.Warning,
+				DiagnosticSeverity.Error => FormulaDiagnosticSeverity.Error,
+				_ => throw new FormulaEvaluationException($"Unknown compilation diagnostic severity type '{severity}'.")
+			};
+
 		private ImmutableArray<FormulaDiagnostic> ConvertDiagnostics(ImmutableArray<Diagnostic> diagnostics)
 		{
-			return diagnostics.Select(d => new FormulaDiagnostic(FormulaDiagnosticSeverity.Error, "")).ToImmutableArray();
+			return diagnostics.Select(d => new FormulaDiagnostic(ConvertFormulaDiagnosticSeverity(d.Severity), d.ToString())).ToImmutableArray();
 		}
 
 		#region Private methods
