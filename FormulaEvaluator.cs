@@ -88,8 +88,6 @@ namespace Grammophone.Formulae.Evaluation
 			if (errorDiagnostics.Any())
 				throw new FormulaCompilationErrorException(FormulaEvaluatorResources.COMPILATION_FAILED, diagnostics);
 
-			OnPreRunScript(script);
-
 			var scriptState = await script.RunAsync(globals: context);
 
 			return new EvaluationState(scriptState);
@@ -114,12 +112,10 @@ namespace Grammophone.Formulae.Evaluation
 		#region Protected methods
 
 		/// <summary>
-		/// Called when the full script is run.
+		/// Called when a script fragment is created. Implementations may process it and return a transformed sscript.
 		/// </summary>
-		/// <remarks>The default implementation does nothing.</remarks>
-		protected virtual void OnPreRunScript(Script script)
-		{
-		}
+		/// <remarks>The default implementation just returns <paramref name="script"/>.</remarks>
+		protected virtual Script OnScriptCreated(Script script) => script;
 
 		#endregion
 
@@ -174,6 +170,8 @@ namespace Grammophone.Formulae.Evaluation
 			}
 
 			fullScript = fullScript.ContinueWith($"{formulaDefinition.DataType} {formulaDefinition.Identifier} = {formulaDefinition.Expression};", scriptOptions);
+
+			fullScript = OnScriptCreated(fullScript);
 
 			EnsureNamespaceUsage(fullScript);
 
