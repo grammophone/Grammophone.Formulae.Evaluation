@@ -14,23 +14,15 @@ namespace Grammophone.Formulae.Evaluation
 	/// </summary>
 	public class EvaluationState
 	{
-		#region Private fields
-
-		private ImmutableArray<EvaluationVariable> variables;
-
-		private ScriptState scriptState;
-
-		private ImmutableDictionary<string, EvaluationVariable>? variablesByName;
-
-		#endregion
-
 		#region Construction
 
-		internal EvaluationState(ScriptState scriptState)
+		internal EvaluationState(string identifier, ImmutableArray<EvaluationVariable> variables, ImmutableArray<FormulaDiagnostic> diagnostics)
 		{
-			if (scriptState == null) throw new ArgumentNullException(nameof(scriptState));
-
-			this.scriptState = scriptState;
+			this.Identifier = identifier;
+			this.Variables = variables;
+			this.Diagnostics = diagnostics;
+			this.VariablesByName = variables.ToImmutableDictionary(ev => ev.Name);
+			this.ReturnValue = this.VariablesByName[identifier].Value;
 		}
 
 		#endregion
@@ -38,61 +30,29 @@ namespace Grammophone.Formulae.Evaluation
 		#region Public properties
 
 		/// <summary>
+		/// The identifier for which the formulae were computed.
+		/// </summary>
+		public string Identifier { get; }
+
+		/// <summary>
 		/// The variables computed in the evaluation.
 		/// </summary>
-		public IReadOnlyList<EvaluationVariable> Variables
-		{
-			get
-			{
-				if (variables.IsDefault)
-				{
-					ImmutableInterlocked.InterlockedInitialize(ref variables, CreateVariables());
-				}
-
-				return variables;
-			}
-		}
+		public IReadOnlyList<EvaluationVariable> Variables { get; }
 
 		/// <summary>
 		/// The variables computed in the evaluation, indexed by their name.
 		/// </summary>
-		public IReadOnlyDictionary<string, EvaluationVariable> VariablesByName
-		{
-			get
-			{
-				if (variablesByName == null)
-				{
-					variablesByName = CreateVariablesByName();
-				}
-
-				return variablesByName;
-			}
-		}
+		public IReadOnlyDictionary<string, EvaluationVariable> VariablesByName;
 
 		/// <summary>
 		/// The return value produced by the evaulation.
 		/// </summary>
-		public object? ReturnValue
-		{
-			get
-			{
-				return scriptState.ReturnValue;
-			}
-		}
+		public object? ReturnValue;
 
-		#endregion
-
-		#region Private methods
-
-		private ImmutableArray<EvaluationVariable> CreateVariables()
-		{
-			return scriptState.Variables.Select(sv => new EvaluationVariable(sv.Name, sv.Type, sv.IsReadOnly, sv.Value)).ToImmutableArray();
-		}
-
-		private ImmutableDictionary<string, EvaluationVariable> CreateVariablesByName()
-		{
-			return variables.ToImmutableDictionary(ev => ev.Name);
-		}
+		/// <summary>
+		/// The diagnostics of the formula compilation.
+		/// </summary>
+		public IReadOnlyList<FormulaDiagnostic> Diagnostics { get; }
 
 		#endregion
 	}

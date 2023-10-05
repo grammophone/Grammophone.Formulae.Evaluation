@@ -77,7 +77,7 @@ namespace Grammophone.Formulae.Evaluation
 			if (context == null) throw new ArgumentNullException(nameof(context));
 			if (identifier == null) throw new ArgumentNullException(nameof(identifier));
 
-			var script = GetScript(identifier).ContinueWith(identifier, scriptOptions);
+			var script = GetScript(identifier);
 
 			var diagnostics = ConvertDiagnostics(script.Compile());
 
@@ -90,7 +90,9 @@ namespace Grammophone.Formulae.Evaluation
 
 			var scriptState = await script.RunAsync(globals: context);
 
-			return new EvaluationState(scriptState);
+			var variables = scriptState.Variables.Select(sv => new EvaluationVariable(sv.Name, sv.Type, sv.IsReadOnly, sv.Value)).ToImmutableArray();
+
+			return new EvaluationState(identifier, variables, diagnostics);
 		}
 
 		/// <summary>
