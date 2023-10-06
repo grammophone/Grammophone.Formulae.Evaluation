@@ -15,7 +15,7 @@ namespace Grammophone.Formulae.Evaluation
 	{
 		#region Construction
 
-		internal EvaluationVariable(string name, Type type, bool isReadOnly, object? value)
+		internal EvaluationVariable(string name, Type type, bool isReadOnly, object? value, string? formulaExpression)
 		{
 			if (name is null)
 			{
@@ -31,6 +31,7 @@ namespace Grammophone.Formulae.Evaluation
 			this.Type = type;
 			this.IsReadOnly = isReadOnly;
 			this.Value = value;
+			this.FormulaExpression = formulaExpression;
 		}
 
 		#endregion
@@ -56,6 +57,11 @@ namespace Grammophone.Formulae.Evaluation
 		/// The value of the variable after the evaluation.
 		/// </summary>
 		public object? Value { get; }
+
+		/// <summary>
+		/// Formula expression associated with the variable, if any, else null.
+		/// </summary>
+		public string? FormulaExpression { get; }
 
 		#endregion
 

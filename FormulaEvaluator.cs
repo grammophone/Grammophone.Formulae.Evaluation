@@ -92,7 +92,9 @@ namespace Grammophone.Formulae.Evaluation
 
 			var scriptState = await script.RunAsync(globals: context);
 
-			var variables = scriptState.Variables.Select(sv => new EvaluationVariable(sv.Name, sv.Type, sv.IsReadOnly, sv.Value)).ToImmutableArray();
+			var variables = scriptState.Variables
+				.Select(sv => new EvaluationVariable(sv.Name, sv.Type, sv.IsReadOnly, sv.Value, TryGetFormulaExpression(sv.Name)))
+				.ToImmutableArray();
 
 			return new EvaluationState(identifier, variables, diagnostics);
 		}
@@ -207,6 +209,18 @@ namespace Grammophone.Formulae.Evaluation
 				{
 					throw new FormulaNameAccessException(String.Format(FormulaEvaluatorResources.NAME_ACCESS_DENIED, name), name);
 				}
+			}
+		}
+
+		private string? TryGetFormulaExpression(string identifier)
+		{
+			if (formulaDefinitionsByidentifiers.TryGetValue(identifier, out var formulaDefinition))
+			{
+				return formulaDefinition.Expression;
+			}
+			else
+			{
+				return null;
 			}
 		}
 
