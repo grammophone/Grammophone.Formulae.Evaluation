@@ -17,7 +17,7 @@ namespace Grammophone.Formulae.Evaluation
 	/// Evaluator of formulae that may reference a context class of type <typeparamref name="C"/>.
 	/// </summary>
 	/// <typeparam name="C">The type of the context class.</typeparam>
-	public class FormulaEvaluator<C>
+	public class FormulaEvaluator<C> : FormulaParser<C>
 		where C : class
 	{
 		#region Private fields
@@ -25,10 +25,6 @@ namespace Grammophone.Formulae.Evaluation
 		private readonly ConcurrentDictionary<string, Script> formulaScriptsByIdentifiers;
 
 		private readonly IReadOnlyDictionary<string, IFormulaDefinition> formulaDefinitionsByidentifiers;
-
-		private readonly ScriptOptions scriptOptions;
-		
-		private readonly IEnumerable<string> excludedNames;
 
 		#endregion
 
@@ -46,20 +42,11 @@ namespace Grammophone.Formulae.Evaluation
 			IEnumerable<Assembly>? assemblies = null,
 			IEnumerable<string>? imports = null,
 			IEnumerable<string>? excludedNames = null)
+			: base(assemblies, imports, excludedNames)
 		{
 			formulaDefinitionsByidentifiers = formulaDefinitions.ToDictionary(d => d.Identifier);
 
 			formulaScriptsByIdentifiers = new ConcurrentDictionary<string, Script>();
-
-			scriptOptions = ScriptOptions.Default
-				.WithReferences(typeof(Object).Assembly, typeof(Math).Assembly, typeof(IEnumerable<C>).Assembly)
-				.WithAllowUnsafe(false)
-				.WithCheckOverflow(true);
-
-			if (assemblies != null) scriptOptions = scriptOptions.AddReferences(assemblies);
-			if (imports != null) scriptOptions = scriptOptions.AddImports(imports);
-
-			this.excludedNames = new HashSet<string>(excludedNames) ?? Enumerable.Empty<string>();
 		}
 
 		#endregion
@@ -154,7 +141,7 @@ namespace Grammophone.Formulae.Evaluation
 				throw new FormulaEvaluationException(String.Format(FormulaEvaluatorResources.NO_FORMULA_FOR_IDENTIFIER, identifier));
 			}
 
-			var preParseScript = CSharpScript.Create(formulaDefinition.Expression, options: scriptOptions, globalsType: typeof(C));
+			var preParseScript = CSharpScript.Create(formulaDefinition.Expression, options: this.ScriptOptions, globalsType: typeof(C));
 
 			var containedIdentifiers = from syntaxTree in preParseScript.GetCompilation().SyntaxTrees
 																 from identifierNode in syntaxTree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>()
@@ -162,7 +149,7 @@ namespace Grammophone.Formulae.Evaluation
 																 where parentNode is not AssignmentExpressionSyntax && parentNode is not MemberAccessExpressionSyntax
 																 select identifierNode.Identifier.Text;
 
-			Script fullScript = CSharpScript.Create(String.Empty, options: scriptOptions, globalsType: typeof(C));
+			Script fullScript = CSharpScript.Create(String.Empty, options: this.ScriptOptions, globalsType: typeof(C));
 
 			foreach (string containedIdentifier in containedIdentifiers)
 			{
@@ -173,7 +160,7 @@ namespace Grammophone.Formulae.Evaluation
 				fullScript = ContinueWithScript(fullScript, containedScript);
 			}
 
-			fullScript = fullScript.ContinueWith($"{formulaDefinition.DataType} {formulaDefinition.Identifier} = {formulaDefinition.Expression};", scriptOptions);
+			fullScript = fullScript.ContinueWith($"{formulaDefinition.DataType} {formulaDefinition.Identifier} = {formulaDefinition.Expression};", this.ScriptOptions);
 
 			fullScript = OnScriptCreated(fullScript);
 
@@ -186,7 +173,7 @@ namespace Grammophone.Formulae.Evaluation
 		{
 			if (sourceScript.Previous != null) targetScript = ContinueWithScript(targetScript, sourceScript.Previous);
 
-			targetScript = targetScript.ContinueWith(sourceScript.Code, scriptOptions);
+			targetScript = targetScript.ContinueWith(sourceScript.Code, this.ScriptOptions);
 
 			return targetScript;
 		}
@@ -205,7 +192,7 @@ namespace Grammophone.Formulae.Evaluation
 			{
 				string name = nameNode.ToString();
 
-				if (excludedNames.Contains(name))
+				if (this.ExcludedNames.Contains(name))
 				{
 					throw new FormulaNameAccessException(String.Format(FormulaEvaluatorResources.NAME_ACCESS_DENIED, name), name);
 				}
