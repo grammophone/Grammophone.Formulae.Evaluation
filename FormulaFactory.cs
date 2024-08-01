@@ -13,7 +13,7 @@ namespace Grammophone.Formulae.Evaluation
 	/// Factory for creating <see cref="FormulaEvaluator{C}"/> instances.
 	/// </summary>
 	/// <typeparam name="C">The type of the context class.</typeparam>
-	public class FormulaEvaluatorFactory<C>
+	public class FormulaFactory<C>
 		where C : class
 	{
 		#region Auxilliary classes
@@ -49,7 +49,7 @@ namespace Grammophone.Formulae.Evaluation
 				return compositeKeyBuilder.ToString();
 			}
 
-			public bool Equals(FormulaEvaluatorFactory<C>.FormulaDefinitionsKey? other) => this.CompositeKey == other?.CompositeKey;
+			public bool Equals(FormulaFactory<C>.FormulaDefinitionsKey? other) => this.CompositeKey == other?.CompositeKey;
 
 			public override int GetHashCode() => this.CompositeKey.GetHashCode();
 
@@ -74,7 +74,7 @@ namespace Grammophone.Formulae.Evaluation
 
 		#region Construction
 
-		static FormulaEvaluatorFactory()
+		static FormulaFactory()
 		{
 			defaultAssemblies = new Assembly[] { };
 			defaultImports = new string[] { "System", "System.Math" };
@@ -87,7 +87,7 @@ namespace Grammophone.Formulae.Evaluation
 		/// <param name="assemblies">Optional collectoin of additional assembles to be referenced by the evaluators to be created.</param>
 		/// <param name="imports">Optional namespace imports. If not specified, it defaults to "System" and "System.Math".</param>
 		/// <param name="excludedNames">Optional Namespaces or member names to be blocked from usage.</param>
-		public FormulaEvaluatorFactory(IEnumerable<Assembly>? assemblies = null, IEnumerable<string>? imports = null, IEnumerable<string>? excludedNames = null)
+		public FormulaFactory(IEnumerable<Assembly>? assemblies = null, IEnumerable<string>? imports = null, IEnumerable<string>? excludedNames = null)
 		{
 			if (assemblies != null)
 				this.Assemblies = assemblies.ToImmutableArray();
@@ -149,7 +149,7 @@ namespace Grammophone.Formulae.Evaluation
 		/// <summary>
 		/// Get a formula parser.
 		/// </summary>
-		public FormulaParser<C> GetFormulaParser() => lazyFormulaParser.Value;
+		public FormulaParser<C> GetParser() => lazyFormulaParser.Value;
 
 		#endregion
 
