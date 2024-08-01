@@ -22,14 +22,14 @@ namespace Grammophone.Formulae.Evaluation {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "17.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class FormulaEvaluatorResources {
+    internal class FormulaParserResources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
         private static global::System.Globalization.CultureInfo resourceCulture;
         
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal FormulaEvaluatorResources() {
+        internal FormulaParserResources() {
         }
         
         /// <summary>
@@ -39,7 +39,7 @@ namespace Grammophone.Formulae.Evaluation {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Grammophone.Formulae.Evaluation.FormulaEvaluatorResources", typeof(FormulaEvaluatorResources).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Grammophone.Formulae.Evaluation.FormulaParserResources", typeof(FormulaParserResources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -61,20 +61,20 @@ namespace Grammophone.Formulae.Evaluation {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Formula compilation has failed..
+        ///   Looks up a localized string similar to Access to name &apos;{0}&apos; is denied..
         /// </summary>
-        internal static string COMPILATION_FAILED {
+        internal static string NAME_ACCESS_DENIED {
             get {
-                return ResourceManager.GetString("COMPILATION_FAILED", resourceCulture);
+                return ResourceManager.GetString("NAME_ACCESS_DENIED", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No formula is defined for identifier &apos;{0}&apos;..
+        ///   Looks up a localized string similar to Unknown compilation diagnostic severity type &apos;{0}&apos;..
         /// </summary>
-        internal static string NO_FORMULA_FOR_IDENTIFIER {
+        internal static string UNKNOWN_SEVERITY_TYPE {
             get {
-                return ResourceManager.GetString("NO_FORMULA_FOR_IDENTIFIER", resourceCulture);
+                return ResourceManager.GetString("UNKNOWN_SEVERITY_TYPE", resourceCulture);
             }
         }
     }

@@ -68,6 +68,8 @@ namespace Grammophone.Formulae.Evaluation
 
 		private readonly MRUCache<FormulaDefinitionsKey, FormulaEvaluator<C>> evaluatorsCache;
 
+		private readonly Lazy<FormulaParser<C>> lazyFormulaParser;
+
 		#endregion
 
 		#region Construction
@@ -103,6 +105,9 @@ namespace Grammophone.Formulae.Evaluation
 				this.ExcludedNames = defaultExcludedNames;
 
 			this.evaluatorsCache = new MRUCache<FormulaDefinitionsKey, FormulaEvaluator<C>>(k => CreateEvaluator(k.FormulaDefinitions));
+
+			this.lazyFormulaParser = new Lazy<FormulaParser<C>>(
+				() => new FormulaParser<C>(this.Assemblies, this.Imports, this.ExcludedNames), System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
 		}
 
 		#endregion
@@ -140,6 +145,11 @@ namespace Grammophone.Formulae.Evaluation
 
 			return evaluatorsCache.Get(formulaDefinitionsKey);
 		}
+
+		/// <summary>
+		/// Get a formula parser.
+		/// </summary>
+		public FormulaParser<C> GetFormulaParser() => lazyFormulaParser.Value;
 
 		#endregion
 

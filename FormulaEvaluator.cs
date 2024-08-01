@@ -114,19 +114,6 @@ namespace Grammophone.Formulae.Evaluation
 
 		#region Private methods
 
-		private FormulaDiagnosticSeverity ConvertFormulaDiagnosticSeverity(DiagnosticSeverity severity)
-			=> severity switch
-			{
-				DiagnosticSeverity.Hidden => FormulaDiagnosticSeverity.Hidden,
-				DiagnosticSeverity.Info => FormulaDiagnosticSeverity.Info,
-				DiagnosticSeverity.Warning => FormulaDiagnosticSeverity.Warning,
-				DiagnosticSeverity.Error => FormulaDiagnosticSeverity.Error,
-				_ => throw new FormulaEvaluationException(String.Format(FormulaEvaluatorResources.UNKNOWN_SEVERITY_TYPE, severity))
-			};
-
-		private ImmutableArray<FormulaDiagnostic> ConvertDiagnostics(ImmutableArray<Diagnostic> diagnostics)
-			=> diagnostics.Select(d => new FormulaDiagnostic(ConvertFormulaDiagnosticSeverity(d.Severity), d.ToString())).ToImmutableArray();
-
 		private Script GetScript(string identifier)
 		{
 			if (identifier == null) throw new ArgumentNullException(nameof(identifier));
@@ -176,27 +163,6 @@ namespace Grammophone.Formulae.Evaluation
 			targetScript = targetScript.ContinueWith(sourceScript.Code, this.ScriptOptions);
 
 			return targetScript;
-		}
-
-		private void EnsureNamespaceUsage(Script script)
-		{
-			var syntaxTree = script.GetCompilation().SyntaxTrees.FirstOrDefault();
-
-			if (syntaxTree == null) return;
-
-			var nameNodes = from node in syntaxTree.GetRoot().DescendantNodesAndSelf()
-															where node.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.SimpleMemberAccessExpression) || node.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.IdentifierName)
-															select node;
-
-			foreach (var nameNode in nameNodes)
-			{
-				string name = nameNode.ToString();
-
-				if (this.ExcludedNames.Contains(name))
-				{
-					throw new FormulaNameAccessException(String.Format(FormulaEvaluatorResources.NAME_ACCESS_DENIED, name), name);
-				}
-			}
 		}
 
 		private string? TryGetFormulaExpression(string identifier)
