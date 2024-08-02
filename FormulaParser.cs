@@ -64,7 +64,9 @@ namespace Grammophone.Formulae.Evaluation
 
 			var preParseScript = CSharpScript.Create(expression, options: this.ScriptOptions, globalsType: typeof(C));
 
-			var diagnostics = ConvertDiagnostics(preParseScript.Compile());
+			var compilation = preParseScript.GetCompilation();
+
+			var diagnostics = ConvertDiagnostics(compilation.GetParseDiagnostics());
 
 			EnsureNamespaceUsage(preParseScript);
 
