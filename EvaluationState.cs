@@ -44,12 +44,12 @@ namespace Grammophone.Formulae.Evaluation
 		/// <summary>
 		/// The variables computed in the evaluation, indexed by their name.
 		/// </summary>
-		public IReadOnlyDictionary<string, EvaluationVariable> VariablesByName;
+		public IReadOnlyDictionary<string, EvaluationVariable> VariablesByName { get; }
 
 		/// <summary>
 		/// The return value produced by the evaulation.
 		/// </summary>
-		public object? ReturnValue;
+		public object? ReturnValue { get; }
 
 		/// <summary>
 		/// The diagnostics of the formula compilation.
