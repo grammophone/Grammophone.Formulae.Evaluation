@@ -37,17 +37,30 @@ namespace Grammophone.Formulae.Evaluation
 		/// <param name="assemblies">Optional additional assemblies to reference for the compilation of the formulae.</param>
 		/// <param name="imports">Optional namespace imports.</param>
 		/// <param name="excludedNames">Optional namespaces or member names to be blocked from usage.</param>
+		/// <param name="roundingOptions">If not null, the rounding options to use for decimal variables, otherwise the decimal variables are assigned with no rounding.</param>
 		protected internal FormulaEvaluator(
 			IEnumerable<IFormulaDefinition> formulaDefinitions,
-			IEnumerable<Assembly>? assemblies = null,
-			IEnumerable<string>? imports = null,
-			IEnumerable<string>? excludedNames = null)
+			IEnumerable<Assembly>? assemblies,
+			IEnumerable<string>? imports,
+			IEnumerable<string>? excludedNames,
+			RoundingOptions? roundingOptions)
 			: base(assemblies, imports, excludedNames)
 		{
 			formulaDefinitionsByidentifiers = formulaDefinitions.ToDictionary(d => d.Identifier);
 
 			formulaScriptsByIdentifiers = new ConcurrentDictionary<string, Script>();
+			
+			this.RoundingOptions = roundingOptions;
 		}
+
+		#endregion
+
+		#region Protected properties
+
+		/// <summary>
+		/// If not null, the rounding options to use for decimal variables, otherwise the decimal variables are assigned with no rounding.
+		/// </summary>
+		protected RoundingOptions? RoundingOptions { get; }
 
 		#endregion
 
@@ -147,7 +160,18 @@ namespace Grammophone.Formulae.Evaluation
 				fullScript = ContinueWithScript(fullScript, containedScript);
 			}
 
-			fullScript = fullScript.ContinueWith($"{formulaDefinition.DataType} {formulaDefinition.Identifier} = {formulaDefinition.Expression};", this.ScriptOptions);
+			string fullExpression;
+
+			if (formulaDefinition.DataType == typeof(decimal) && this.RoundingOptions != null)
+			{
+				fullExpression = $"Round({formulaDefinition.Expression}, {this.RoundingOptions.RoundedDecimalsCount}, MidpointRounding.{this.RoundingOptions.MidpointRounding})";
+			}
+			else
+			{
+				fullExpression = formulaDefinition.Expression;
+			}
+
+			fullScript = fullScript.ContinueWith($"{formulaDefinition.DataType} {formulaDefinition.Identifier} = {fullExpression};", this.ScriptOptions);
 
 			fullScript = OnScriptCreated(fullScript);
 

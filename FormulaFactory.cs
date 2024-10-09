@@ -87,7 +87,12 @@ namespace Grammophone.Formulae.Evaluation
 		/// <param name="assemblies">Optional collectoin of additional assembles to be referenced by the evaluators to be created.</param>
 		/// <param name="imports">Optional namespace imports. If not specified, it defaults to "System" and "System.Math".</param>
 		/// <param name="excludedNames">Optional Namespaces or member names to be blocked from usage.</param>
-		public FormulaFactory(IEnumerable<Assembly>? assemblies = null, IEnumerable<string>? imports = null, IEnumerable<string>? excludedNames = null)
+		/// <param name="roundingOptions">If not null, the rounding options to use for decimal variables, otherwise the decimal variables are assigned with no rounding.</param>
+		public FormulaFactory(
+			IEnumerable<Assembly>? assemblies = null,
+			IEnumerable<string>? imports = null,
+			IEnumerable<string>? excludedNames = null,
+			RoundingOptions? roundingOptions = null)
 		{
 			if (assemblies != null)
 				this.Assemblies = assemblies.ToImmutableArray();
@@ -108,6 +113,8 @@ namespace Grammophone.Formulae.Evaluation
 
 			this.lazyFormulaParser = new Lazy<FormulaParser<C>>(
 				() => new FormulaParser<C>(this.Assemblies, this.Imports, this.ExcludedNames), System.Threading.LazyThreadSafetyMode.ExecutionAndPublication);
+			
+			this.RoundingOptions = roundingOptions;
 		}
 
 		#endregion
@@ -128,6 +135,11 @@ namespace Grammophone.Formulae.Evaluation
 		/// Namespaces or member names to be blocked from usage.
 		/// </summary>
 		public IReadOnlyCollection<string> ExcludedNames { get; }
+
+		/// <summary>
+		/// If not null, the rounding options to use for decimal variables, otherwise the decimal variables are assigned with no rounding.
+		/// </summary>
+		public RoundingOptions? RoundingOptions { get; }
 
 		#endregion
 
@@ -165,7 +177,7 @@ namespace Grammophone.Formulae.Evaluation
 		/// </summary>
 		/// <param name="formulaDefinitions">The formula definitions to be used for evaluation.</param>
 		protected virtual FormulaEvaluator<C> CreateEvaluator(IEnumerable<IFormulaDefinition> formulaDefinitions)
-			=> new(formulaDefinitions, this.Assemblies, this.Imports, this.ExcludedNames);
+			=> new(formulaDefinitions, this.Assemblies, this.Imports, this.ExcludedNames, this.RoundingOptions);
 
 		#endregion
 	}
