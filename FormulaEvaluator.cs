@@ -155,6 +155,13 @@ namespace Grammophone.Formulae.Evaluation
 			{
 				if (!formulaDefinitionsByidentifiers.ContainsKey(containedIdentifier)) continue;
 
+				bool variableIsDeclared = fullScript
+					.GetCompilation().SyntaxTrees.Any(st =>
+						st.GetRoot().DescendantNodes().OfType<VariableDeclarationSyntax>().Any(d => d
+							.Variables.Any(v => v.Identifier.Text == containedIdentifier)));
+
+				if (variableIsDeclared) continue;
+
 				var containedScript = GetScript(containedIdentifier);
 
 				fullScript = ContinueWithScript(fullScript, containedScript);
