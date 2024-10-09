@@ -147,6 +147,11 @@ namespace Grammophone.Formulae.Evaluation
 		}
 
 		/// <summary>
+		/// Flush the evaluators cache. Call if you change the expression of an existing formula definition.
+		/// </summary>
+		public void FlushEvaluatorsCache() => evaluatorsCache.Clear();
+
+		/// <summary>
 		/// Get a formula parser.
 		/// </summary>
 		public FormulaParser<C> GetParser() => lazyFormulaParser.Value;
