@@ -169,7 +169,7 @@ namespace Grammophone.Formulae.Evaluation
 
 			string fullExpression;
 
-			if (formulaDefinition.DataType == typeof(decimal) && this.RoundingOptions != null)
+			if (formulaDefinition.DataType == typeof(decimal) && this.RoundingOptions != null && !formulaDefinition.IgnoreRoundingOptions)
 			{
 				fullExpression = $"Round({formulaDefinition.Expression}, {this.RoundingOptions.RoundedDecimalsCount}, MidpointRounding.{this.RoundingOptions.MidpointRounding})";
 			}
