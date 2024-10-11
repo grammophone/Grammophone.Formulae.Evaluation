@@ -15,7 +15,7 @@ namespace Grammophone.Formulae.Evaluation
 	{
 		#region Construction
 
-		internal EvaluationVariable(string name, Type type, bool isReadOnly, object? value, string? formulaExpression)
+		internal EvaluationVariable(string name, Type type, bool isReadOnly, object? value, string? formulaExpression, bool isRounded)
 		{
 			if (name is null)
 			{
@@ -32,6 +32,7 @@ namespace Grammophone.Formulae.Evaluation
 			this.IsReadOnly = isReadOnly;
 			this.Value = value;
 			this.FormulaExpression = formulaExpression;
+			this.IsRounded = isRounded;
 		}
 
 		#endregion
@@ -62,6 +63,11 @@ namespace Grammophone.Formulae.Evaluation
 		/// Formula expression associated with the variable, if any, else null.
 		/// </summary>
 		public string? FormulaExpression { get; }
+
+		/// <summary>
+		/// True if rounding was applied.
+		/// </summary>
+		public bool IsRounded { get; }
 
 		#endregion
 

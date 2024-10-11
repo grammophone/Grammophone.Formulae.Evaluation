@@ -92,11 +92,12 @@ namespace Grammophone.Formulae.Evaluation
 
 			var scriptState = await script.RunAsync(globals: context);
 
-			var variables = scriptState.Variables
-				.Select(sv => new EvaluationVariable(sv.Name, sv.Type, sv.IsReadOnly, sv.Value, TryGetFormulaExpression(sv.Name)))
-				.ToImmutableArray();
+			var variables = from sv in scriptState.Variables
+											let definition = TryGetFormulaDefinition(sv.Name)
+											select new EvaluationVariable(
+												sv.Name, sv.Type, sv.IsReadOnly, sv.Value, definition?.Expression, this.RoundingOptions != null && (definition?.IgnoreRoundingOptions ?? false));
 
-			return new EvaluationState(identifier, variables, diagnostics);
+			return new EvaluationState(identifier, variables.ToImmutableArray(), diagnostics);
 		}
 
 		/// <summary>
@@ -201,6 +202,18 @@ namespace Grammophone.Formulae.Evaluation
 			if (formulaDefinitionsByidentifiers.TryGetValue(identifier, out var formulaDefinition))
 			{
 				return formulaDefinition.Expression;
+			}
+			else
+			{
+				return null;
+			}
+		}
+
+		private IFormulaDefinition? TryGetFormulaDefinition(string identifier)
+		{
+			if (formulaDefinitionsByidentifiers.TryGetValue(identifier, out var formulaDefinition))
+			{
+				return formulaDefinition;
 			}
 			else
 			{
