@@ -95,7 +95,8 @@ namespace Grammophone.Formulae.Evaluation
 			var variables = from sv in scriptState.Variables
 											let definition = TryGetFormulaDefinition(sv.Name)
 											select new EvaluationVariable(
-												sv.Name, sv.Type, sv.IsReadOnly, sv.Value, definition?.Expression, this.RoundingOptions != null && (definition?.IgnoreRoundingOptions ?? false));
+												sv.Name, sv.Type, sv.IsReadOnly, sv.Value, definition?.Expression,
+												this.RoundingOptions != null && !(definition?.IgnoreRoundingOptions ?? false) && definition.DataType == typeof(decimal));
 
 			return new EvaluationState(identifier, variables.ToImmutableArray(), diagnostics);
 		}
