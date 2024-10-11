@@ -96,7 +96,7 @@ namespace Grammophone.Formulae.Evaluation
 											let definition = TryGetFormulaDefinition(sv.Name)
 											select new EvaluationVariable(
 												sv.Name, sv.Type, sv.IsReadOnly, sv.Value, definition?.Expression,
-												this.RoundingOptions != null && !(definition?.IgnoreRoundingOptions ?? false) && definition.DataType == typeof(decimal));
+												this.RoundingOptions != null && !(definition?.IgnoreRoundingOptions ?? false) && definition?.DataType == typeof(decimal));
 
 			return new EvaluationState(identifier, variables.ToImmutableArray(), diagnostics);
 		}
@@ -196,18 +196,6 @@ namespace Grammophone.Formulae.Evaluation
 			targetScript = targetScript.ContinueWith(sourceScript.Code, this.ScriptOptions);
 
 			return targetScript;
-		}
-
-		private string? TryGetFormulaExpression(string identifier)
-		{
-			if (formulaDefinitionsByidentifiers.TryGetValue(identifier, out var formulaDefinition))
-			{
-				return formulaDefinition.Expression;
-			}
-			else
-			{
-				return null;
-			}
 		}
 
 		private IFormulaDefinition? TryGetFormulaDefinition(string identifier)
