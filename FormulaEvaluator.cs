@@ -171,7 +171,7 @@ namespace Grammophone.Formulae.Evaluation
 
 			string fullExpression;
 
-			if (formulaDefinition.DataType == typeof(decimal) && this.RoundingOptions != null && !formulaDefinition.IgnoreRoundingOptions)
+			if (AreTypesAssignable(typeof(decimal), formulaDefinition.DataType) && this.RoundingOptions != null && !formulaDefinition.IgnoreRoundingOptions)
 			{
 				fullExpression = $"Round({formulaDefinition.Expression}, {this.RoundingOptions.RoundedDecimalsCount}, MidpointRounding.{this.RoundingOptions.MidpointRounding})";
 			}
@@ -208,6 +208,17 @@ namespace Grammophone.Formulae.Evaluation
 			{
 				return null;
 			}
+		}
+
+		private static bool AreTypesAssignable(Type sourceType, Type destinationType)
+		{
+			if (destinationType.IsAssignableFrom(sourceType)) return true;
+
+			var hasImplicitOperators = from method in destinationType.GetMethods(BindingFlags.Public | BindingFlags.Static)
+																 where method.Name == "op_Implicit" && method.GetParameters().Any(parameter => parameter.ParameterType.IsAssignableFrom(sourceType))
+																 select method;
+
+			return hasImplicitOperators.Any();
 		}
 
 		#endregion
