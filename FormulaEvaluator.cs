@@ -234,7 +234,7 @@ namespace Grammophone.Formulae.Evaluation
 
 			if (script.Previous != null)
 			{
-				return currentIdentifiers.Union(GetContainedIdentifierNames(script.Previous));
+				return currentIdentifiers.Union(GetTotalContainedIdentifierNames(script.Previous));
 			}
 			else
 			{
