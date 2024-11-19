@@ -102,6 +102,38 @@ namespace Grammophone.Formulae.Evaluation
 		}
 
 		/// <summary>
+		/// Get the identifiers that are required for the evaluation of an identifier.
+		/// </summary>
+		/// <param name="identifier">The identifier to compute.</param>
+		/// <returns>Returns the identifiers required for the evaluation of <paramref name="identifier"/>.</returns>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="identifier"/> is null.</exception>
+		/// <exception cref="FormulaCompilationErrorException">Thrown when there is a compilation error.</exception>
+		public IEnumerable<Identifier> GetContainedIdentifiers(string identifier)
+		{
+			if (identifier == null) throw new ArgumentNullException(nameof(identifier));
+
+			var script = GetScript(identifier);
+
+			var diagnostics = ConvertDiagnostics(script.Compile());
+
+			var errorDiagnostics = from diagnostic in diagnostics
+														 where diagnostic.Severity == FormulaDiagnosticSeverity.Error
+														 select diagnostic;
+
+			if (errorDiagnostics.Any())
+				throw new FormulaCompilationErrorException(FormulaEvaluatorResources.COMPILATION_FAILED, diagnostics);
+
+			var identifierNames = GetTotalContainedIdentifierNames(script);
+
+			var identifiers = from identifierName in identifierNames
+												orderby identifierName ascending
+												let formulaDefinition = formulaDefinitionsByidentifiers.ContainsKey(identifierName) ? formulaDefinitionsByidentifiers[identifierName] : null
+												select new Identifier(identifierName, formulaDefinition);
+
+			return identifiers.ToArray();
+		}
+
+		/// <summary>
 		/// Compile and run the furmulae on a given <paramref name="context"/> to evaluate <paramref name="identifier"/> and return its value.
 		/// </summary>
 		/// <param name="context">The context to pass to the formulae.</param>
@@ -145,11 +177,7 @@ namespace Grammophone.Formulae.Evaluation
 
 			var preParseScript = CSharpScript.Create(formulaDefinition.Expression, options: this.ScriptOptions, globalsType: typeof(C));
 
-			var containedIdentifiers = from syntaxTree in preParseScript.GetCompilation().SyntaxTrees
-																 from identifierNode in syntaxTree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>()
-																 let parentNode = identifierNode.Parent
-																 where parentNode is not AssignmentExpressionSyntax && parentNode is not MemberAccessExpressionSyntax
-																 select identifierNode.Identifier.Text;
+			IEnumerable<string> containedIdentifiers = GetContainedIdentifierNames(preParseScript);
 
 			Script fullScript = CSharpScript.Create(String.Empty, options: this.ScriptOptions, globalsType: typeof(C));
 
@@ -187,6 +215,31 @@ namespace Grammophone.Formulae.Evaluation
 			EnsureNamespaceUsage(fullScript);
 
 			return fullScript;
+		}
+
+		private static IEnumerable<string> GetContainedIdentifierNames(Script script)
+		{
+			var identifiers = from syntaxTree in script.GetCompilation().SyntaxTrees
+												from identifierNode in syntaxTree.GetRoot().DescendantNodes().OfType<IdentifierNameSyntax>()
+												let parentNode = identifierNode.Parent
+												where parentNode is not AssignmentExpressionSyntax && parentNode is not MemberAccessExpressionSyntax
+												select identifierNode.Identifier.Text;
+
+			return identifiers.Distinct();
+		}
+
+		private static IEnumerable<string> GetTotalContainedIdentifierNames(Script script)
+		{
+			var currentIdentifiers = GetContainedIdentifierNames(script);
+
+			if (script.Previous != null)
+			{
+				return currentIdentifiers.Union(GetContainedIdentifierNames(script.Previous));
+			}
+			else
+			{
+				return currentIdentifiers;
+			}
 		}
 
 		private Script ContinueWithScript(Script targetScript, Script sourceScript)
