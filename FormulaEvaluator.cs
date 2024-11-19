@@ -108,7 +108,7 @@ namespace Grammophone.Formulae.Evaluation
 		/// <returns>Returns the identifiers required for the evaluation of <paramref name="identifier"/>.</returns>
 		/// <exception cref="ArgumentNullException">Thrown when <paramref name="identifier"/> is null.</exception>
 		/// <exception cref="FormulaCompilationErrorException">Thrown when there is a compilation error.</exception>
-		public IEnumerable<Identifier> GetContainedIdentifiers(string identifier)
+		public IReadOnlyList<Identifier> GetContainedIdentifiers(string identifier)
 		{
 			if (identifier == null) throw new ArgumentNullException(nameof(identifier));
 
