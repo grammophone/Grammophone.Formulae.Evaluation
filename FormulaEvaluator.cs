@@ -81,15 +81,6 @@ namespace Grammophone.Formulae.Evaluation
 
 			var script = GetScript(identifier);
 
-			var diagnostics = ConvertDiagnostics(script.Compile());
-
-			var errorDiagnostics = from diagnostic in diagnostics
-														 where diagnostic.Severity == FormulaDiagnosticSeverity.Error
-														 select diagnostic;
-
-			if (errorDiagnostics.Any())
-				throw new FormulaCompilationErrorException(FormulaEvaluatorResources.COMPILATION_FAILED, diagnostics);
-
 			var scriptState = await script.RunAsync(globals: context);
 
 			var variables = from sv in scriptState.Variables
@@ -98,7 +89,7 @@ namespace Grammophone.Formulae.Evaluation
 												sv.Name, sv.Type, sv.IsReadOnly, sv.Value, definition?.Expression,
 												this.RoundingOptions != null && !(definition?.IgnoreRoundingOptions ?? false) && definition?.DataType == typeof(decimal));
 
-			return new EvaluationState(identifier, variables.ToImmutableArray(), diagnostics);
+			return new EvaluationState(identifier, variables.ToImmutableArray(), ConvertDiagnostics(script.GetCompilation().GetDiagnostics()));
 		}
 
 		/// <summary>
@@ -113,15 +104,6 @@ namespace Grammophone.Formulae.Evaluation
 			if (identifier == null) throw new ArgumentNullException(nameof(identifier));
 
 			var script = GetScript(identifier);
-
-			var diagnostics = ConvertDiagnostics(script.Compile());
-
-			var errorDiagnostics = from diagnostic in diagnostics
-														 where diagnostic.Severity == FormulaDiagnosticSeverity.Error
-														 select diagnostic;
-
-			if (errorDiagnostics.Any())
-				throw new FormulaCompilationErrorException(FormulaEvaluatorResources.COMPILATION_FAILED, diagnostics);
 
 			var identifierNames = GetTotalContainedIdentifierNames(script);
 
@@ -214,6 +196,8 @@ namespace Grammophone.Formulae.Evaluation
 
 			EnsureNamespaceUsage(fullScript);
 
+			Compile(fullScript);
+
 			return fullScript;
 		}
 
@@ -272,6 +256,15 @@ namespace Grammophone.Formulae.Evaluation
 																 select method;
 
 			return hasImplicitOperators.Any();
+		}
+
+		private ImmutableArray<FormulaDiagnostic> Compile(Script script)
+		{
+			var diagnostics = ConvertDiagnostics(script.Compile());
+
+			EnsureNoErrorDiagnostics(diagnostics);
+
+			return diagnostics;
 		}
 
 		#endregion

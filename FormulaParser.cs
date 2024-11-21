@@ -80,8 +80,21 @@ namespace Grammophone.Formulae.Evaluation
 		/// <summary>
 		/// Convert the diagnostic errors.
 		/// </summary>
-		protected ImmutableArray<FormulaDiagnostic> ConvertDiagnostics(ImmutableArray<Diagnostic> diagnostics)
+		protected static ImmutableArray<FormulaDiagnostic> ConvertDiagnostics(ImmutableArray<Diagnostic> diagnostics)
 			=> diagnostics.Select(d => new FormulaDiagnostic(ConvertFormulaDiagnosticSeverity(d.Severity), d.ToString())).ToImmutableArray();
+
+		/// <summary>
+		/// Ensures that there are no errors in a collection of <see cref="FormulaDiagnostic"/>s, else throws a <see cref="FormulaCompilationErrorException"/>.
+		/// </summary>
+		protected static void EnsureNoErrorDiagnostics(ImmutableArray<FormulaDiagnostic> diagnostics)
+		{
+			var errorDiagnostics = from diagnostic in diagnostics
+														 where diagnostic.Severity == FormulaDiagnosticSeverity.Error
+														 select diagnostic;
+
+			if (errorDiagnostics.Any())
+				throw new FormulaCompilationErrorException(FormulaEvaluatorResources.COMPILATION_FAILED, diagnostics);
+		}
 
 		/// <summary>
 		/// Ensure that a script uses only the allowed names.
@@ -113,7 +126,7 @@ namespace Grammophone.Formulae.Evaluation
 
 		#region Private methods
 
-		private FormulaDiagnosticSeverity ConvertFormulaDiagnosticSeverity(DiagnosticSeverity severity)
+		private static FormulaDiagnosticSeverity ConvertFormulaDiagnosticSeverity(DiagnosticSeverity severity)
 			=> severity switch
 			{
 				DiagnosticSeverity.Hidden => FormulaDiagnosticSeverity.Hidden,
