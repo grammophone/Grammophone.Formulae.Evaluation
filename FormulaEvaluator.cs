@@ -139,6 +139,52 @@ namespace Grammophone.Formulae.Evaluation
 		/// <remarks>The default implementation just returns <paramref name="script"/>.</remarks>
 		protected virtual Script OnScriptCreated(Script script) => script;
 
+		/// <summary>
+		/// Continue a script with the code of another script.
+		/// </summary>
+		/// <param name="targetScript">The target script to append.</param>
+		/// <param name="sourceScript">The source script to continue with.</param>
+		protected Script ContinueWithScript(Script targetScript, Script sourceScript)
+		{
+			if (sourceScript.Previous != null) targetScript = ContinueWithScript(targetScript, sourceScript.Previous);
+
+			if (sourceScript.Code != String.Empty)
+			{
+				targetScript = targetScript.ContinueWith(sourceScript.Code, this.ScriptOptions);
+			}
+
+			return targetScript;
+		}
+
+		/// <summary>
+		/// Continue a script with the code of another script.
+		/// </summary>
+		/// <param name="targetScript">The target script to append.</param>
+		/// <param name="sourceScript">The source script to continue with.</param>
+		/// <param name="excludedIdentifiers">Skip adding scripts that declare identifiers in this set.</param>
+		protected Script ContinueWithScript(Script targetScript, Script sourceScript, ISet<string> excludedIdentifiers)
+		{
+			if (sourceScript.Previous != null) targetScript = ContinueWithScript(targetScript, sourceScript.Previous, excludedIdentifiers);
+
+			if (sourceScript.Code != String.Empty)
+			{
+				var declaredIdentifiers = sourceScript
+					.GetCompilation().SyntaxTrees.SelectMany(st =>
+						st.GetRoot().DescendantNodes().OfType<VariableDeclarationSyntax>().SelectMany(d => d.Variables.Select(v => v.Identifier.Text)));
+
+				bool variableIsDeclared = declaredIdentifiers.Any(declaredIdentifier => excludedIdentifiers.Contains(declaredIdentifier));
+
+				if (!variableIsDeclared)
+				{
+					targetScript = targetScript.ContinueWith(sourceScript.Code, this.ScriptOptions);
+
+					excludedIdentifiers.UnionWith(declaredIdentifiers);
+				}
+			}
+
+			return targetScript;
+		}
+
 		#endregion
 
 		#region Private methods
@@ -151,6 +197,13 @@ namespace Grammophone.Formulae.Evaluation
 		}
 
 		private Script CreateScript(string identifier)
+		{
+			var script = CreateScript(identifier, new HashSet<string>());
+
+			return script;
+		}
+
+		private Script CreateScript(string identifier, ISet<string> resolvedIdentifiers)
 		{
 			if (!formulaDefinitionsByidentifiers.TryGetValue(identifier, out var formulaDefinition))
 			{
@@ -167,16 +220,18 @@ namespace Grammophone.Formulae.Evaluation
 			{
 				if (!formulaDefinitionsByidentifiers.ContainsKey(containedIdentifier)) continue;
 
-				bool variableIsDeclared = fullScript
-					.GetCompilation().SyntaxTrees.Any(st =>
-						st.GetRoot().DescendantNodes().OfType<VariableDeclarationSyntax>().Any(d => d
-							.Variables.Any(v => v.Identifier.Text == containedIdentifier)));
+				if (resolvedIdentifiers.Contains(containedIdentifier)) continue;
 
-				if (variableIsDeclared) continue;
+				//bool variableIsDeclared = fullScript
+				//	.GetCompilation().SyntaxTrees.Any(st =>
+				//		st.GetRoot().DescendantNodes().OfType<VariableDeclarationSyntax>().Any(d => d
+				//			.Variables.Any(v => v.Identifier.Text == containedIdentifier)));
+
+				//if (variableIsDeclared) continue;
 
 				var containedScript = GetScript(containedIdentifier);
 
-				fullScript = ContinueWithScript(fullScript, containedScript);
+				fullScript = ContinueWithScript(fullScript, containedScript, resolvedIdentifiers);
 			}
 
 			string fullExpression;
@@ -197,6 +252,8 @@ namespace Grammophone.Formulae.Evaluation
 			EnsureNamespaceUsage(fullScript);
 
 			Compile(fullScript);
+
+			resolvedIdentifiers.Add(identifier);
 
 			return fullScript;
 		}
@@ -224,15 +281,6 @@ namespace Grammophone.Formulae.Evaluation
 			{
 				return currentIdentifiers;
 			}
-		}
-
-		private Script ContinueWithScript(Script targetScript, Script sourceScript)
-		{
-			if (sourceScript.Previous != null) targetScript = ContinueWithScript(targetScript, sourceScript.Previous);
-
-			targetScript = targetScript.ContinueWith(sourceScript.Code, this.ScriptOptions);
-
-			return targetScript;
 		}
 
 		private IFormulaDefinition? TryGetFormulaDefinition(string identifier)
