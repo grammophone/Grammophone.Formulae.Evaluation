@@ -310,7 +310,7 @@ namespace Grammophone.Formulae.Evaluation
 		{
 			var diagnostics = ConvertDiagnostics(script.Compile());
 
-			EnsureNoErrorDiagnostics(diagnostics);
+			EnsureNoErrorDiagnostics(script, diagnostics);
 
 			return diagnostics;
 		}
